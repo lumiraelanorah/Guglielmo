@@ -149,7 +149,8 @@ function PannelloModelli() {
       .select("*, marchio_aziende(nome, approvata)")
       .neq("stato", "bozza")
       .order("aggiornato_il", { ascending: false });
-    const lista = ((r as ModelloAdmin[]) ?? []).sort((a, b) => Number(b.stato === "in_revisione") - Number(a.stato === "in_revisione"));
+    const urgente = (m: ModelloAdmin) => Number(m.stato === "in_revisione" || Boolean(m.modifiche_in_attesa));
+    const lista = ((r as ModelloAdmin[]) ?? []).sort((a, b) => urgente(b) - urgente(a));
     setModelli(lista);
   }, []);
   useEffect(() => {
@@ -160,6 +161,17 @@ function PannelloModelli() {
     const nota = stato === "rifiutato" ? (note[m.id] ?? "").trim() || "Il modello va corretto." : null;
     const { error } = await supabase().from("marchio_modelli").update({ stato, nota_admin: nota }).eq("id", m.id);
     setMsg(error ? "Operazione non riuscita." : stato === "pubblicato" ? `"${m.nome_prodotto}" è online.` : `"${m.nome_prodotto}" rimandato all'azienda.`);
+    carica();
+  }
+
+  async function modifiche(m: ModelloAdmin, approva: boolean) {
+    const campi = approva && m.modifiche_in_attesa ? { ...m.modifiche_in_attesa } : {};
+    const nota = approva ? null : (note[m.id] ?? "").trim() || "Le modifiche proposte non sono state approvate.";
+    const { error } = await supabase()
+      .from("marchio_modelli")
+      .update({ ...campi, modifiche_in_attesa: null, nota_admin: nota })
+      .eq("id", m.id);
+    setMsg(error ? "Operazione non riuscita." : approva ? `Modifiche di "${m.nome_prodotto}" pubblicate.` : "Modifiche scartate.");
     carica();
   }
 
@@ -195,6 +207,32 @@ function PannelloModelli() {
               ) : null}
               {m.marchio_aziende && !m.marchio_aziende.approvata && m.stato !== "pubblicato" ? (
                 <Avviso tipo="attenzione">L&apos;azienda non è ancora approvata: approvala nella scheda Aziende prima di pubblicare.</Avviso>
+              ) : null}
+              {m.modifiche_in_attesa ? (
+                <div className="avviso">
+                  <strong>L&apos;azienda propone queste modifiche</strong> (online resta la versione qui a sinistra):
+                  <div style={{ margin: ".75rem 0" }}>
+                    <AnteprimaModello
+                      immagine={(m.modifiche_in_attesa.immagine_url as string | null) ?? null}
+                      modello={{
+                        zona_foto: m.modifiche_in_attesa.zona_foto ?? null,
+                        zona_dedica: m.modifiche_in_attesa.consenti_dedica ? (m.modifiche_in_attesa.zona_dedica ?? null) : null,
+                        zona_data: m.modifiche_in_attesa.consenti_data ? (m.modifiche_in_attesa.zona_data ?? null) : null,
+                        font: m.modifiche_in_attesa.font ?? m.font,
+                        colore_testo: m.modifiche_in_attesa.colore_testo ?? m.colore_testo,
+                      }}
+                      esempio={{ dedica: "Esempio di dedica", data: "25 dicembre 2026" }}
+                    />
+                  </div>
+                  <div className="riga-pulsanti">
+                    <Pulsante piccolo onClick={() => modifiche(m, true)}>
+                      Approva le modifiche
+                    </Pulsante>
+                    <Pulsante piccolo variante="secondario" onClick={() => modifiche(m, false)}>
+                      Scarta le modifiche
+                    </Pulsante>
+                  </div>
+                </div>
               ) : null}
               <CampoEtichettato
                 id={`nota-${m.id}`}

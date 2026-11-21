@@ -41,13 +41,17 @@ async function caricaFoto(file: File): Promise<Immagine> {
   const lato = Math.max(bmp.width, bmp.height);
   if (lato > LATO_MAX_FOTO) {
     const s = LATO_MAX_FOTO / lato;
-    const ridotta = await createImageBitmap(bmp, {
-      resizeWidth: Math.round(bmp.width * s),
-      resizeHeight: Math.round(bmp.height * s),
-      resizeQuality: "high",
-    });
-    bmp.close();
-    return ridotta;
+    try {
+      const ridotta = await createImageBitmap(bmp, {
+        resizeWidth: Math.round(bmp.width * s),
+        resizeHeight: Math.round(bmp.height * s),
+        resizeQuality: "high",
+      });
+      bmp.close();
+      return ridotta;
+    } catch {
+      return bmp; // se il browser non riduce, usiamo l'originale
+    }
   }
   return bmp;
 }
@@ -67,6 +71,7 @@ const PASSI = ["La foto", "Le parole", "Anteprima e pagamento"];
 export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: ModelloPubblico; pagamentoDiProva: boolean }) {
   const tela = useRef<HTMLCanvasElement>(null);
   const [grafica, setGrafica] = useState<HTMLImageElement | null>(null);
+  const [erroreGrafica, setErroreGrafica] = useState(false);
   const [fontPronti, setFontPronti] = useState(false);
   const [passo, setPasso] = useState(0);
   const [foto, setFoto] = useState<Immagine | null>(null);
@@ -96,7 +101,10 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
   const esitoDedica = controllaTesto(dedica, modello.max_caratteri);
 
   useEffect(() => {
-    if (modello.immagine_url) caricaModello(modello.immagine_url).then(setGrafica).catch(() => setGrafica(null));
+    if (modello.immagine_url)
+      caricaModello(modello.immagine_url)
+        .then(setGrafica)
+        .catch(() => setErroreGrafica(true));
     const famiglia = FONT_CSS[modello.font].split(",")[0];
     Promise.all([document.fonts.load(`600 40px ${famiglia}`), document.fonts.load(`700 30px "Nunito"`)])
       .catch(() => undefined)
@@ -202,7 +210,8 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
   }
 
   const emailOk = emailValida(email);
-  const puoPagare = Boolean(foto) && esitoDedica.ok && emailOk && consensoFoto && condizioni && !invio;
+  const graficaPronta = !modello.immagine_url || Boolean(grafica);
+  const puoPagare = graficaPronta && Boolean(foto) && esitoDedica.ok && emailOk && consensoFoto && condizioni && !invio;
 
   async function paga() {
     setTentatoInvio(true);
@@ -245,6 +254,11 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
   return (
     <div>
       <IndicatorePassi passi={PASSI} attuale={passo} />
+      {erroreGrafica ? (
+        <Avviso tipo="errore">
+          Non riesco a caricare la grafica dell&apos;etichetta. Controlla la connessione e ricarica la pagina.
+        </Avviso>
+      ) : null}
       <div className="griglia griglia--due">
         <div className="tela-fissa">
           <div className={`tela${passo === 0 && foto ? " tela--trascina" : ""}`}>
@@ -284,7 +298,10 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
                   type="file"
                   accept="image/*"
                   aria-label={foto ? "Cambia foto" : "Scegli o scatta una foto"}
-                  onChange={(e) => sceltaFoto(e.target.files?.[0])}
+                  onChange={(e) => {
+                    sceltaFoto(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
                   data-testid="scegli-foto"
                 />
               </div>
@@ -407,7 +424,7 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
                 <Pulsante variante="secondario" onClick={() => setPasso(haTesto ? 1 : 0)} disabled={invio}>
                   Indietro
                 </Pulsante>
-                <Pulsante onClick={paga} disabled={invio} aria-disabled={!puoPagare}>
+                <Pulsante onClick={paga} disabled={invio || !graficaPronta} aria-disabled={!puoPagare}>
                   {invio ? "Un momento…" : `Paga ${formattaPrezzo(modello.prezzo_cent)}`}
                 </Pulsante>
               </div>

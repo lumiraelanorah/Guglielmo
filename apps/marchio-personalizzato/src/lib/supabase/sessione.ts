@@ -34,8 +34,8 @@ export function useSessione(): StatoSessione {
       ]);
       let azienda = (aziende?.[0] as Azienda | undefined) ?? null;
       const nome = (utente.user_metadata?.nome_azienda as string | undefined)?.trim();
-      if (!azienda && !admin && utente.email_confirmed_at) {
-        const { data: nuova } = await sb.rpc("marchio_registra_azienda", { p_nome: nome && nome.length >= 2 ? nome : utente.email });
+      if (!azienda && !admin && utente.email_confirmed_at && nome && nome.length >= 2) {
+        const { data: nuova } = await sb.rpc("marchio_registra_azienda", { p_nome: nome });
         azienda = (nuova as Azienda | null) ?? null;
       }
       if (vivo) setStato({ pronto: true, utente, admin: Boolean(admin), azienda });

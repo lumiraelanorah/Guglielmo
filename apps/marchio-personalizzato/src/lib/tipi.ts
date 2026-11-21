@@ -24,6 +24,7 @@ export interface Modello extends Omit<ModelloPubblico, "nome_azienda"> {
   azienda_id: string;
   stato: StatoModello;
   nota_admin: string | null;
+  modifiche_in_attesa: Partial<Modello> | null;
   creato_il: string;
   aggiornato_il: string;
 }

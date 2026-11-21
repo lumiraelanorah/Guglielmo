@@ -29,7 +29,9 @@ Queste risposte le ha date chi ha avviato il progetto; vanno richieste a Gugliel
 Registrazione con nome azienda/email/password (conferma email), modelli: carica grafica
 (PNG/JPG, ideale 1252×898 px), disegna zone foto/dedica/data, carattere, colore, lunghezza max,
 invia per l'approvazione. Quando pubblicato: link, QR (PNG 1024 px) e statistiche (visite, anteprime, acquisti).
-Modificare un modello pubblicato lo rimanda in approvazione.
+Le modifiche a un modello pubblicato restano "in attesa" (colonna modifiche_in_attesa): online resta
+la versione approvata e il QR continua a funzionare finché l'amministratore non le approva.
+Un modello pubblicato non si può eliminare; uno con etichette ancora scaricabili neanche.
 
 ## Amministrazione (`/admin`)
 Tema del sito (automatico a calendario o fisso), modelli da approvare/rimandare/ritirare con nota,
@@ -42,7 +44,14 @@ Admin = email in `marchio_admin` con accesso creato ed email confermata.
 - Schema privato marchio_privato: segreto del server e funzione di pulizia
 - Archivio pubblico `marchio-modelli` per le grafiche dei marchi
 - RLS attiva ovunque; i clienti passano solo dal server (funzioni protette da segreto)
-- Pulizia automatica (pg_cron, 3:15): etichette dopo 30 giorni, bozze dopo 2, email ordini dopo 30
+- Pulizia automatica (pg_cron, 3:15): etichette dopo 30 giorni, bozze dopo 3, email ordini dopo 30
+- Un'azienda revocata non vende più (i suoi modelli spariscono dal sito)
+- Limite: 200 bozze all'ora per modello
+
+## Limiti noti della prova
+- L'immagine finale è composta sul telefono del cliente: chi chiama il servizio direttamente potrebbe
+  mandare un'immagine diversa. Rimedio: controllo dell'admin in "Etichette vendute".
+- Le statistiche (visite, anteprime) non distinguono visite ripetute.
 
 ## Dove sta
 - App online: https://marchio-personalizzato.vercel.app (prova: /m/prova)
@@ -54,7 +63,9 @@ Admin = email in `marchio_admin` con accesso creato ed email confermata.
 
 ## Variabili (Vercel)
 NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, MARCHIO_SEGRETO_SERVER (impostate);
-STRIPE_SECRET_KEY, RESEND_API_KEY, EMAIL_MITTENTE (facoltative, da aggiungere).
+STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET (webhook su /api/stripe/webhook, eventi
+checkout.session.completed e checkout.session.async_payment_succeeded), RESEND_API_KEY,
+EMAIL_MITTENTE (facoltative, da aggiungere).
 
 ## Test
 - `npm test`: logica (temi, testo, zone, foto, PDF, Stripe, email) e componenti

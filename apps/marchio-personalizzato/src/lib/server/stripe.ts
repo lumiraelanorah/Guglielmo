@@ -24,6 +24,7 @@ export function parametriCheckout(d: DatiCheckout): URLSearchParams {
   p.set("line_items[0][price_data][product_data][name]", d.descrizione);
   if (d.email) p.set("customer_email", d.email);
   p.set("metadata[personalizzazione_id]", d.id);
+  p.set("metadata[token]", d.token);
   p.set("success_url", `${linkGrazie(d.origine, d.id, d.token)}&session_id={CHECKOUT_SESSION_ID}`);
   p.set("cancel_url", d.codice ? `${d.origine}/m/${encodeURIComponent(d.codice)}?annullato=1` : `${d.origine}/`);
   return p;

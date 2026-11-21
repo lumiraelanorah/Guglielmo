@@ -30,8 +30,13 @@ function SchedaModello({ m, onCambia }: { m: Modello; onCambia: () => void }) {
       });
   }, [m.id]);
 
+  const [erroreElimina, setErroreElimina] = useState<string | null>(null);
   async function elimina() {
-    await supabase().from("marchio_modelli").delete().eq("id", m.id);
+    const { error, count } = await supabase().from("marchio_modelli").delete({ count: "exact" }).eq("id", m.id);
+    if (error || count === 0) {
+      setErroreElimina("Non si può eliminare: ci sono etichette vendute negli ultimi 30 giorni che i clienti possono ancora scaricare.");
+      return;
+    }
     onCambia();
   }
 
@@ -54,6 +59,10 @@ function SchedaModello({ m, onCambia }: { m: Modello; onCambia: () => void }) {
             </Avviso>
           ) : null}
           {m.stato === "in_revisione" ? <p className="campo__aiuto">L&apos;amministratore lo controllerà a breve.</p> : null}
+          {m.stato === "pubblicato" && m.modifiche_in_attesa ? (
+            <Avviso>Hai inviato delle modifiche: finché l&apos;amministratore non le approva resta online la versione attuale.</Avviso>
+          ) : null}
+          {erroreElimina ? <Avviso tipo="errore">{erroreElimina}</Avviso> : null}
           {stat ? <Statistiche {...stat} /> : null}
           {m.stato === "pubblicato" ? (
             <div style={{ marginTop: "1rem" }}>
@@ -73,7 +82,7 @@ function SchedaModello({ m, onCambia }: { m: Modello; onCambia: () => void }) {
             <PulsanteLink href={`/azienda/modelli/${m.id}`} piccolo>
               {m.stato === "pubblicato" ? "Modifica" : "Completa / modifica"}
             </PulsanteLink>
-            <PulsanteConferma testo="Elimina" conferma="Sì, elimina" onConferma={elimina} />
+            {m.stato !== "pubblicato" ? <PulsanteConferma testo="Elimina" conferma="Sì, elimina" onConferma={elimina} /> : null}
           </div>
         </div>
       </div>
@@ -87,6 +96,16 @@ export function AreaAzienda() {
   const [modelli, setModelli] = useState<Modello[] | null>(null);
   const [nome, setNome] = useState("");
   const [errore, setErrore] = useState<string | null>(null);
+  const [nomeAzienda, setNomeAzienda] = useState("");
+
+  async function registraAzienda(e: React.FormEvent) {
+    e.preventDefault();
+    if (nomeAzienda.trim().length < 2) return setErrore("Scrivi il nome dell'azienda.");
+    const { error } = await supabase().rpc("marchio_registra_azienda", { p_nome: nomeAzienda.trim() });
+    if (error) return setErrore("Registrazione non riuscita. Riprova.");
+    setErrore(null);
+    s.ricarica();
+  }
 
   const carica = useCallback(async () => {
     if (!s.azienda) return;
@@ -129,8 +148,14 @@ export function AreaAzienda() {
           <p>
             Sei collegato come amministratore. <Link href="/admin">Vai all&apos;amministrazione</Link>.
           </p>
-        ) : (
+        ) : !s.utente.email_confirmed_at ? (
           <Avviso tipo="attenzione">Conferma la tua email per completare la registrazione, poi ricarica la pagina.</Avviso>
+        ) : (
+          <form onSubmit={registraAzienda} className="scheda">
+            <h2>Registra la tua azienda</h2>
+            <CampoEtichettato id="nome-azienda" etichetta="Nome dell'azienda" value={nomeAzienda} onChange={(e) => setNomeAzienda(e.target.value)} errore={errore} />
+            <Pulsante type="submit">Registra</Pulsante>
+          </form>
         )}
         <Pulsante variante="secondario" onClick={esci}>
           Esci

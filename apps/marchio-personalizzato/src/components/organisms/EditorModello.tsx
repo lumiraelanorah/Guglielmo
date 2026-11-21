@@ -33,6 +33,7 @@ export function EditorModello({ id }: { id: string }) {
   const [salvataggio, setSalvataggio] = useState(false);
   const [messaggio, setMessaggio] = useState<{ tipo: "ok" | "errore" | "attenzione"; testo: string } | null>(null);
   const [caricamento, setCaricamento] = useState(false);
+  const [maxTesto, setMaxTesto] = useState<string | null>(null);
 
   useEffect(() => {
     if (!s.pronto || !s.utente) return;
@@ -43,7 +44,11 @@ export function EditorModello({ id }: { id: string }) {
       .maybeSingle()
       .then(({ data }) => {
         if (!data) setNonTrovato(true);
-        else setM(data as Modello);
+        else {
+          const mod = data as Modello;
+          // se ci sono modifiche in attesa, si riparte da quelle
+          setM(mod.modifiche_in_attesa ? ({ ...mod, ...mod.modifiche_in_attesa } as Modello) : mod);
+        }
       });
   }, [id, s.pronto, s.utente]);
 
@@ -207,9 +212,17 @@ export function EditorModello({ id }: { id: string }) {
       setMessaggio({ tipo: "errore", testo: "Salvataggio non riuscito. Controlla i dati e riprova." });
       return;
     }
-    setM(data as Modello);
+    const salvato = data as Modello;
+    setM(salvato.modifiche_in_attesa ? ({ ...salvato, ...salvato.modifiche_in_attesa } as Modello) : salvato);
     if (inviaPerApprovazione) router.push("/azienda");
-    else setMessaggio({ tipo: "ok", testo: (data as Modello).stato === "in_revisione" && m.stato === "pubblicato" ? "Salvato. Le modifiche saranno visibili dopo l'approvazione." : "Salvato." });
+    else
+      setMessaggio({
+        tipo: "ok",
+        testo:
+          salvato.stato === "pubblicato"
+            ? "Modifiche inviate all'amministratore. Intanto resta online la versione attuale, e il QR continua a funzionare."
+            : "Salvato.",
+      });
   }
 
   return (
@@ -222,7 +235,10 @@ export function EditorModello({ id }: { id: string }) {
         <Distintivo stato={m.stato} />
       </p>
       {m.stato === "pubblicato" ? (
-        <Avviso tipo="attenzione">Questo modello è online. Se lo modifichi, torna in attesa di approvazione finché l&apos;amministratore non lo ricontrolla.</Avviso>
+        <Avviso>
+          Questo modello è online. Le modifiche che salvi vanno all&apos;amministratore: finché non le approva resta online la versione
+          attuale e il QR continua a funzionare.
+        </Avviso>
       ) : null}
       {m.stato === "rifiutato" && m.nota_admin ? (
         <Avviso tipo="attenzione">
@@ -304,8 +320,13 @@ export function EditorModello({ id }: { id: string }) {
             type="number"
             min={5}
             max={60}
-            value={m.max_caratteri}
-            onChange={(e) => aggiorna({ max_caratteri: Math.max(5, Math.min(60, Number(e.target.value) || 5)) })}
+            value={maxTesto ?? String(m.max_caratteri)}
+            onChange={(e) => setMaxTesto(e.target.value)}
+            onBlur={() => {
+              const n = Math.round(Number(maxTesto));
+              if (maxTesto !== null) aggiorna({ max_caratteri: Number.isFinite(n) ? Math.max(5, Math.min(60, n)) : m.max_caratteri });
+              setMaxTesto(null);
+            }}
             aiuto="Da 5 a 60 caratteri."
           />
           <div className="campo">

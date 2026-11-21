@@ -16,7 +16,9 @@ function traduci(msg: string): string {
   if (m.includes("email not confirmed")) return "Devi prima confermare l'email: apri il link che ti abbiamo mandato.";
   if (m.includes("already registered")) return "Questa email è già registrata: usa \"Entra\".";
   if (m.includes("rate limit")) return "Troppi tentativi. Aspetta qualche minuto e riprova.";
-  if (m.includes("password")) return "La password deve avere almeno 8 caratteri.";
+  if (m.includes("should be different")) return "La nuova password deve essere diversa da quella vecchia.";
+  if (m.includes("password") && (m.includes("least") || m.includes("short") || m.includes("weak")))
+    return "La password è troppo debole: usa almeno 8 caratteri, con lettere e numeri.";
   return "Qualcosa non ha funzionato. Riprova.";
 }
 
@@ -64,6 +66,11 @@ export function ModuloAccesso() {
           options: { data: { nome_azienda: nome.trim() }, emailRedirectTo: `${window.location.origin}/accedi` },
         });
         if (error) throw error;
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          setErrore("Questa email è già registrata: usa \"Entra\" (o \"Ho dimenticato la password\").");
+          setModalita("entra");
+          return;
+        }
         if (data.session) {
           await sb.rpc("marchio_registra_azienda", { p_nome: nome.trim() });
           await dopoAccesso();
