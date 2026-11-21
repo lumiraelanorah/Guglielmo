@@ -21,6 +21,8 @@ export interface ModelloPubblico {
   suggerimento_foto: string | null;
   larghezza_mm: number;
   altezza_mm: number;
+  consenti_foto: boolean;
+  parole_vietate: string[];
 }
 
 export interface Modello extends Omit<ModelloPubblico, "nome_azienda"> {

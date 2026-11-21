@@ -17,7 +17,7 @@ export default async function Home() {
           <PulsanteLink href="/m/prova">Prova: il panettone</PulsanteLink>
           <PulsanteLink href="/m/birra">Prova: la birra</PulsanteLink>
           <PulsanteLink href="/m/whisky">Prova: il whisky</PulsanteLink>
-          <PulsanteLink href="/azienda" variante="secondario">
+          <PulsanteLink href="/aziende" variante="secondario">
             Sei un&apos;azienda?
           </PulsanteLink>
         </div>
@@ -49,9 +49,12 @@ export default async function Home() {
             Carica la grafica dell&apos;etichetta, scegli dove il cliente può mettere foto e testo, e ricevi il QR da stampare
             sulla confezione. Le informazioni obbligatorie restano sempre intatte.
           </p>
-          <PulsanteLink href="/accedi" variante="secondario">
-            Entra o registrati
-          </PulsanteLink>
+          <div className="riga-pulsanti">
+            <PulsanteLink href="/aziende">Perché conviene (è gratis)</PulsanteLink>
+            <PulsanteLink href="/accedi" variante="secondario">
+              Entra o registrati
+            </PulsanteLink>
+          </div>
         </section>
       </div>
     </Pagina>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { rpc, segretoServer } from "@/lib/server/db";
 import { creaCheckout, stripeAttivo } from "@/lib/server/stripe";
 import { controllaTesto } from "@/lib/testo";
+import { contenutoValido } from "@/lib/regole";
 import { daDataUrl, emailValida, jpegBase64Valido } from "@/lib/validazione";
 import type { ModelloPubblico } from "@/lib/tipi";
 
@@ -29,8 +30,11 @@ export async function POST(req: Request) {
   const m = modelli[0];
   if (!m) return errore("Questa etichetta non è più disponibile.", 404);
 
-  const esito = controllaTesto(dedica, m.max_caratteri);
+  const conFoto = b.conFoto === true;
+  const esito = controllaTesto(dedica, m.max_caratteri, m.parole_vietate ?? []);
   if (!esito.ok) return errore(esito.errore ?? "Dedica non valida.");
+  const regole = contenutoValido({ consentiFoto: m.consenti_foto, consentiDedica: m.consenti_dedica, haFoto: conFoto, dedica });
+  if (!regole.ok) return errore(regole.errore ?? "Contenuto non valido.");
   if (data && !/^\d{1,2} [a-z]+ \d{4}$/.test(data)) return errore("Data non valida.");
 
   let creata: { id: string; token: string; importo_cent: number };
@@ -44,6 +48,7 @@ export async function POST(req: Request) {
       p_email: email,
       p_consenso: true,
       p_da_controllare: esito.daControllare,
+      p_con_foto: conFoto,
     });
     creata = righe[0];
   } catch {

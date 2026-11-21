@@ -9,6 +9,7 @@ import { IndicatorePassi } from "@/components/molecules/IndicatorePassi";
 import { disegnaEtichetta, FONT_CSS, type ModelloDisegno } from "@/lib/disegno";
 import { misure } from "@/lib/stampa-misure";
 import { controllaTesto, formattaData } from "@/lib/testo";
+import { contenutoValido } from "@/lib/regole";
 import { formattaPrezzo } from "@/lib/prezzo";
 import { emailValida } from "@/lib/validazione";
 import { limitaSpostamento, POSIZIONE_INIZIALE, zonaInPixel, zonaValida, type PosizioneFoto } from "@/lib/zone";
@@ -66,14 +67,14 @@ function caricaModello(src: string): Promise<HTMLImageElement> {
   });
 }
 
-const PASSI = ["La foto", "Le parole", "Anteprima e pagamento"];
 
 export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: ModelloPubblico; pagamentoDiProva: boolean }) {
   const tela = useRef<HTMLCanvasElement>(null);
   const [grafica, setGrafica] = useState<HTMLImageElement | null>(null);
   const [erroreGrafica, setErroreGrafica] = useState(false);
   const [fontPronti, setFontPronti] = useState(false);
-  const [passo, setPasso] = useState(0);
+  const consentiFoto = modello.consenti_foto !== false;
+  const [passo, setPasso] = useState(() => (consentiFoto ? 0 : 1));
   const [foto, setFoto] = useState<Immagine | null>(null);
   const [posizione, setPosizione] = useState<PosizioneFoto>(POSIZIONE_INIZIALE);
   const [erroreFoto, setErroreFoto] = useState<string | null>(null);
@@ -95,14 +96,20 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
   const disegno: ModelloDisegno = {
     larghezza_mm: modello.larghezza_mm,
     altezza_mm: modello.altezza_mm,
-    zona_foto: modello.zona_foto,
+    zona_foto: consentiFoto ? modello.zona_foto : null,
     zona_dedica: modello.consenti_dedica ? modello.zona_dedica : null,
     zona_data: modello.consenti_data ? modello.zona_data : null,
     font: modello.font,
     colore_testo: modello.colore_testo,
   };
   const dataTesto = formattaData(dataIso);
-  const esitoDedica = controllaTesto(dedica, modello.max_caratteri);
+  const esitoDedica = controllaTesto(dedica, modello.max_caratteri, modello.parole_vietate ?? []);
+  const contenuto = contenutoValido({
+    consentiFoto,
+    consentiDedica: modello.consenti_dedica,
+    haFoto: Boolean(foto),
+    dedica: modello.consenti_dedica ? dedica : "",
+  });
 
   useEffect(() => {
     if (modello.immagine_url)
@@ -215,7 +222,7 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
 
   const emailOk = emailValida(email);
   const graficaPronta = !modello.immagine_url || Boolean(grafica);
-  const puoPagare = graficaPronta && Boolean(foto) && esitoDedica.ok && emailOk && consensoFoto && condizioni && !invio;
+  const puoPagare = graficaPronta && contenuto.ok && esitoDedica.ok && emailOk && consensoFoto && condizioni && !invio;
 
   async function paga() {
     setTentatoInvio(true);
@@ -242,6 +249,7 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
           email: email.trim(),
           consensoFoto,
           condizioni,
+          conFoto: Boolean(foto),
         }),
       });
       const j = await r.json().catch(() => ({}));
@@ -254,10 +262,12 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
   }
 
   const haTesto = modello.consenti_dedica || modello.consenti_data;
+  const passi = [consentiFoto ? "La foto" : null, haTesto ? "Le parole" : null, "Anteprima e pagamento"].filter(Boolean) as string[];
+  const nomePasso = passo === 0 ? "La foto" : passo === 1 ? "Le parole" : "Anteprima e pagamento";
 
   return (
     <div>
-      <IndicatorePassi passi={PASSI} attuale={passo} />
+      <IndicatorePassi passi={passi} attuale={Math.max(0, passi.indexOf(nomePasso))} />
       {erroreGrafica ? (
         <Avviso tipo="errore">
           Non riesco a caricare la grafica dell&apos;etichetta. Controlla la connessione e ricarica la pagina.
@@ -296,8 +306,9 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
         <div className="scheda">
           {passo === 0 ? (
             <section aria-labelledby="t-foto">
-              <h2 id="t-foto">1. Scegli la foto</h2>
+              <h2 id="t-foto">{passi.indexOf("La foto") + 1}. Scegli la foto</h2>
               <p>La foto va solo nello spazio evidenziato: il resto dell&apos;etichetta resta come l&apos;ha pensata il marchio.</p>
+              {modello.consenti_dedica ? <p>Se preferisci, puoi anche non mettere la foto e scrivere solo un messaggio.</p> : null}
               {modello.suggerimento_foto ? (
                 <p>
                   <strong>Consiglio:</strong> {modello.suggerimento_foto}
@@ -343,8 +354,8 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
                 </>
               ) : null}
               <div style={{ marginTop: "1.5rem" }}>
-                <Pulsante largo disabled={!foto} onClick={() => setPasso(haTesto ? 1 : 2)}>
-                  Avanti
+                <Pulsante largo disabled={!foto && !modello.consenti_dedica} onClick={() => setPasso(haTesto ? 1 : 2)}>
+                  {foto || !modello.consenti_dedica ? "Avanti" : "Continua senza foto, solo con un messaggio"}
                 </Pulsante>
               </div>
             </section>
@@ -352,8 +363,12 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
 
           {passo === 1 ? (
             <section aria-labelledby="t-parole">
-              <h2 id="t-parole">2. Le tue parole</h2>
-              <p>Sono facoltative: puoi anche lasciarle vuote.</p>
+              <h2 id="t-parole">{passi.indexOf("Le parole") + 1}. Le tue parole</h2>
+              <p>
+                {foto
+                  ? "Sono facoltative: puoi anche lasciarle vuote."
+                  : "Senza foto, scrivi almeno un messaggio: sarà il protagonista dell'etichetta."}
+              </p>
               {modello.consenti_dedica ? (
                 <CampoEtichettato
                   id="dedica"
@@ -378,10 +393,12 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
                 />
               ) : null}
               <div className="riga-pulsanti">
-                <Pulsante variante="secondario" onClick={() => setPasso(0)}>
-                  Indietro
-                </Pulsante>
-                <Pulsante disabled={!esitoDedica.ok} onClick={() => setPasso(2)}>
+                {consentiFoto ? (
+                  <Pulsante variante="secondario" onClick={() => setPasso(0)}>
+                    Indietro
+                  </Pulsante>
+                ) : null}
+                <Pulsante disabled={!esitoDedica.ok || !contenuto.ok} onClick={() => setPasso(2)}>
                   Vedi l&apos;anteprima
                 </Pulsante>
               </div>
@@ -390,7 +407,7 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
 
           {passo === 2 ? (
             <section aria-labelledby="t-conferma">
-              <h2 id="t-conferma">3. Controlla e paga</h2>
+              <h2 id="t-conferma">{passi.length}. Controlla e paga</h2>
               <ul className="riepilogo">
                 <li>
                   <span>Etichetta personalizzata</span>

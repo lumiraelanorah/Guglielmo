@@ -52,9 +52,26 @@ export interface EsitoTesto {
   daControllare: boolean;
 }
 
-export function controllaTesto(testo: string, max: number): EsitoTesto {
+/** Dal campo dell'azienda ("a, b; c") a un elenco pulito: minuscolo, senza doppioni, al massimo 100. */
+export function analizzaParoleVietate(campo: string): string[] {
+  const visti = new Set<string>();
+  for (const p of (campo ?? "").split(/[,;\n]+/)) {
+    const v = p.trim().toLowerCase();
+    if (v.length >= 2 && v.length <= 30) visti.add(v);
+  }
+  return [...visti].slice(0, 100);
+}
+
+export function controllaTesto(testo: string, max: number, vietateDalMarchio: string[] = []): EsitoTesto {
   const t = (testo ?? "").trim();
   if (t.length > max) return { ok: false, errore: `Massimo ${max} caratteri.`, daControllare: false };
+  const unito = parole(t).join("");
+  for (const v of vietateDalMarchio) {
+    const vn = parole(v).join("");
+    if (vn.length >= 3 && unito.includes(vn)) {
+      return { ok: false, errore: `"${v}" non è consentito su questa etichetta.`, daControllare: false };
+    }
+  }
   if (contieneRadice(t, BLOCCATE)) {
     return { ok: false, errore: "Questo testo contiene parole non consentite. Prova a riscriverlo.", daControllare: false };
   }

@@ -14,7 +14,7 @@ export function Intestazione({ tema }: { tema: NomeTema }) {
         </Link>
         <nav className="intestazione__menu" aria-label="Menu principale">
           <Link href="/m/prova">Prova ora</Link>
-          <Link href="/azienda">Area aziende</Link>
+          <Link href="/aziende">Per le aziende</Link>
           <span className="intestazione__tema" aria-label={`Tema: ${t.nome}`}>
             {t.nome}
           </span>

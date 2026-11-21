@@ -10,6 +10,7 @@ import { CampoEtichettato } from "@/components/molecules/CampoEtichettato";
 import { Statistiche } from "@/components/molecules/Statistiche";
 import { PulsanteConferma } from "@/components/molecules/PulsanteConferma";
 import { AnteprimaModello } from "@/components/molecules/AnteprimaModello";
+import { EtichetteClienti } from "@/components/organisms/EtichetteClienti";
 import { supabase } from "@/lib/supabase/browser";
 import { esci, useSessione } from "@/lib/supabase/sessione";
 import { formattaPrezzo } from "@/lib/prezzo";
@@ -46,7 +47,7 @@ function SchedaModello({ m, onCambia }: { m: Modello; onCambia: () => void }) {
       <div className="griglia griglia--due">
         <AnteprimaModello
           immagine={m.immagine_url}
-          modello={{ larghezza_mm: m.larghezza_mm, altezza_mm: m.altezza_mm, zona_foto: m.zona_foto, zona_dedica: m.consenti_dedica ? m.zona_dedica : null, zona_data: m.consenti_data ? m.zona_data : null, font: m.font, colore_testo: m.colore_testo }}
+          modello={{ larghezza_mm: m.larghezza_mm, altezza_mm: m.altezza_mm, zona_foto: m.consenti_foto ? m.zona_foto : null, zona_dedica: m.consenti_dedica ? m.zona_dedica : null, zona_data: m.consenti_data ? m.zona_data : null, font: m.font, colore_testo: m.colore_testo }}
         />
         <div>
           <h3>{m.nome_prodotto}</h3>
@@ -71,11 +72,16 @@ function SchedaModello({ m, onCambia }: { m: Modello; onCambia: () => void }) {
               </p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className="qr" src={`/api/qr?codice=${m.codice}`} alt={`Codice QR che apre ${link}`} />
-              <p>
-                <PulsanteLink href={`/api/qr?codice=${m.codice}&scarica=1`} download piccolo variante="secondario">
-                  Scarica il QR da stampare
+              <div className="riga-pulsanti" style={{ margin: ".75rem 0" }}>
+                <PulsanteLink href={`/api/bollino?codice=${m.codice}&scarica=1`} download piccolo>
+                  Scarica il bollino per le confezioni
                 </PulsanteLink>
-              </p>
+                <PulsanteLink href={`/api/qr?codice=${m.codice}&scarica=1`} download piccolo variante="secondario">
+                  Solo il QR
+                </PulsanteLink>
+              </div>
+              <p className="campo__aiuto">Il bollino (5 × 6 cm) invita i clienti a personalizzare l&apos;etichetta: stampatelo sulla confezione.</p>
+              <EtichetteClienti modelloId={m.id} />
             </div>
           ) : null}
           <div className="riga-pulsanti" style={{ marginTop: "1rem" }}>

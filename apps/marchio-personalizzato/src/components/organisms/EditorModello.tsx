@@ -13,6 +13,7 @@ import { disegnaEtichetta, FONT_NOMI, type FontModello } from "@/lib/disegno";
 import { FORMATI, misure } from "@/lib/stampa-misure";
 import { normalizzaRettangolo, POSIZIONE_INIZIALE, zonaValida, type Zona } from "@/lib/zone";
 import { supabase } from "@/lib/supabase/browser";
+import { analizzaParoleVietate } from "@/lib/testo";
 import { useSessione } from "@/lib/supabase/sessione";
 import type { Modello } from "@/lib/tipi";
 
@@ -34,6 +35,7 @@ export function EditorModello({ id }: { id: string }) {
   const [messaggio, setMessaggio] = useState<{ tipo: "ok" | "errore" | "attenzione"; testo: string } | null>(null);
   const [caricamento, setCaricamento] = useState(false);
   const [maxTesto, setMaxTesto] = useState<string | null>(null);
+  const [vietateTesto, setVietateTesto] = useState<string | null>(null);
 
   useEffect(() => {
     if (!s.pronto || !s.utente) return;
@@ -75,7 +77,7 @@ export function EditorModello({ id }: { id: string }) {
       {
         larghezza_mm: m.larghezza_mm,
         altezza_mm: m.altezza_mm,
-        zona_foto: zone.foto,
+        zona_foto: m.consenti_foto ? zone.foto : null,
         zona_dedica: m.consenti_dedica ? zone.dedica : null,
         zona_data: m.consenti_data ? zone.data : null,
         font: m.font,
@@ -178,7 +180,8 @@ export function EditorModello({ id }: { id: string }) {
     const p: string[] = [];
     if (!m) return p;
     if (!m.immagine_url) p.push("carica la grafica dell'etichetta");
-    if (!zonaValida(m.zona_foto)) p.push("disegna la zona foto");
+    if (m.consenti_foto && !zonaValida(m.zona_foto)) p.push("disegna la zona foto (o togli la foto)");
+    if (!m.consenti_foto && !m.consenti_dedica) p.push("permetti almeno la foto o il messaggio");
     if (m.consenti_dedica && !zonaValida(m.zona_dedica)) p.push("disegna la zona dedica (o togli la dedica)");
     if (m.consenti_data && !zonaValida(m.zona_data)) p.push("disegna la zona data (o togli la data)");
     if (m.nome_prodotto.trim().length < 2) p.push("scrivi il nome del prodotto");
@@ -208,6 +211,8 @@ export function EditorModello({ id }: { id: string }) {
         font: m.font,
         colore_testo: m.colore_testo,
         suggerimento_foto: m.suggerimento_foto?.trim() || null,
+        consenti_foto: m.consenti_foto,
+        parole_vietate: vietateTesto !== null ? analizzaParoleVietate(vietateTesto) : m.parole_vietate ?? [],
         larghezza_mm: m.larghezza_mm,
         altezza_mm: m.altezza_mm,
         stato: statoNuovo,
@@ -329,7 +334,7 @@ export function EditorModello({ id }: { id: string }) {
                   role="tab"
                   aria-selected={attiva === z}
                   onClick={() => setAttiva(z)}
-                  disabled={(z === "dedica" && !m.consenti_dedica) || (z === "data" && !m.consenti_data)}
+                  disabled={(z === "foto" && !m.consenti_foto) || (z === "dedica" && !m.consenti_dedica) || (z === "data" && !m.consenti_data)}
                 >
                   {NOMI_ZONE[z]} {zonaValida(z === "foto" ? m.zona_foto : z === "dedica" ? m.zona_dedica : m.zona_data) ? "✓" : ""}
                 </Pulsante>
@@ -337,6 +342,9 @@ export function EditorModello({ id }: { id: string }) {
             </div>
           </div>
 
+          <Casella id="consenti-foto" checked={m.consenti_foto} onChange={(v) => aggiorna({ consenti_foto: v })}>
+            Il cliente può mettere una foto
+          </Casella>
           <Casella
             id="foto-ovale"
             checked={m.zona_foto?.forma === "ovale"}
@@ -391,6 +399,20 @@ export function EditorModello({ id }: { id: string }) {
               Colore del testo
             </label>
             <input id="colore" type="color" value={m.colore_testo} onChange={(e) => aggiorna({ colore_testo: e.target.value })} style={{ width: 80, height: 52 }} />
+          </div>
+          <div className="campo">
+            <label className="campo__etichetta" htmlFor="vietate">
+              Parole non ammesse sulle vostre etichette (facoltativo)
+            </label>
+            <span className="campo__aiuto">
+              Separate da virgole, per esempio i nomi dei concorrenti. Le parole offensive sono già bloccate per tutti.
+            </span>
+            <textarea
+              id="vietate"
+              className="campo__area"
+              value={vietateTesto ?? (m.parole_vietate ?? []).join(", ")}
+              onChange={(e) => setVietateTesto(e.target.value)}
+            />
           </div>
           <Casella id="esempio" checked={esempio} onChange={setEsempio}>
             Mostra un testo di esempio
