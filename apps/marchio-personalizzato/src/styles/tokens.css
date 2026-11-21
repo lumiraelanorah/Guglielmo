@@ -1,0 +1,70 @@
+/* Design tokens: base + quattro temi stagionali (scelti dall'amministratore) */
+:root {
+  --font-titoli: "Playfair Display", Georgia, serif;
+  --font-testo: "Nunito", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --testo-base: 1.125rem;
+  --testo-piccolo: 1rem;
+  --raggio: 14px;
+  --raggio-grande: 22px;
+  --spazio-1: 0.5rem;
+  --spazio-2: 1rem;
+  --spazio-3: 1.5rem;
+  --spazio-4: 2.5rem;
+  --larghezza-max: 1080px;
+  --ombra: 0 10px 30px rgba(20, 10, 10, 0.12);
+  --colore-testo: #1f1a17;
+  --colore-testo-tenue: #574c45;
+  --colore-bordo: #cbbfb5;
+  --colore-carta: #ffffff;
+  --colore-errore: #b00020;
+  --colore-ok: #1f6f43;
+  --colore-avviso: #8a5a00;
+  --focus: 0 0 0 4px rgba(255, 196, 0, 0.75);
+
+  /* tema predefinito: regalo */
+  --colore-primario: #2f4b7c;
+  --colore-primario-scuro: #1f3358;
+  --colore-su-primario: #ffffff;
+  --colore-accento: #d9a441;
+  --sfondo: #f6f3ee;
+  --sfondo-forte: #e9e2d6;
+  --decorazione: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M40 30l3 7 7 3-7 3-3 7-3-7-7-3 7-3z' fill='%23d9a441' opacity='.25'/%3E%3C/svg%3E");
+}
+
+[data-tema="natale"] {
+  --colore-primario: #8e1b2a;
+  --colore-primario-scuro: #6a1220;
+  --colore-su-primario: #ffffff;
+  --colore-accento: #1d5c3a;
+  --sfondo: #fbf5ec;
+  --sfondo-forte: #f1e3cf;
+  --decorazione: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cg stroke='%238e1b2a' stroke-width='1.6' opacity='.18' stroke-linecap='round'%3E%3Cpath d='M45 33v24M33 45h24M36.5 36.5l17 17M53.5 36.5l-17 17'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+[data-tema="sanvalentino"] {
+  --colore-primario: #b0173f;
+  --colore-primario-scuro: #860f2f;
+  --colore-su-primario: #ffffff;
+  --colore-accento: #e86a8a;
+  --sfondo: #fff5f7;
+  --sfondo-forte: #fde0e7;
+  --decorazione: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M40 52s-12-7.5-12-15a6.5 6.5 0 0 1 12-3.5A6.5 6.5 0 0 1 52 37c0 7.5-12 15-12 15z' fill='%23e86a8a' opacity='.22'/%3E%3C/svg%3E");
+}
+
+[data-tema="pasqua"] {
+  --colore-primario: #3d6b35;
+  --colore-primario-scuro: #2b4f25;
+  --colore-su-primario: #ffffff;
+  --colore-accento: #e3b505;
+  --sfondo: #f8fbf1;
+  --sfondo-forte: #e8f1d8;
+  --decorazione: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='%23e3b505' opacity='.28'%3E%3Ccircle cx='40' cy='32' r='5'/%3E%3Ccircle cx='48' cy='40' r='5'/%3E%3Ccircle cx='40' cy='48' r='5'/%3E%3Ccircle cx='32' cy='40' r='5'/%3E%3C/g%3E%3Ccircle cx='40' cy='40' r='3.5' fill='%233d6b35' opacity='.35'/%3E%3C/svg%3E");
+}
+
+[data-tema="regalo"] {
+  --colore-primario: #2f4b7c;
+  --colore-primario-scuro: #1f3358;
+  --colore-accento: #d9a441;
+  --sfondo: #f6f3ee;
+  --sfondo-forte: #e9e2d6;
+}
