@@ -68,7 +68,11 @@ export default async function Grazie({ searchParams }: { searchParams: Promise<Q
       <h1>Grazie! La tua etichetta è pronta</h1>
       <p>
         Hai pagato {formattaPrezzo(e.importo_cent)} per l&apos;etichetta di <strong>{e.nome_prodotto}</strong>.
-        {e.email ? <> Ti abbiamo mandato la ricevuta e questo link a {e.email}.</> : null}
+        {e.email && process.env.RESEND_API_KEY ? (
+          <> Ti abbiamo mandato la ricevuta e questo link a {e.email}.</>
+        ) : (
+          <> Salva questa pagina tra i preferiti: da qui puoi scaricare di nuovo il file.</>
+        )}
       </p>
       <div className="griglia griglia--due">
         <div>

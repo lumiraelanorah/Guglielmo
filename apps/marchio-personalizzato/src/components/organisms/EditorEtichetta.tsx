@@ -246,7 +246,7 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
     <div>
       <IndicatorePassi passi={PASSI} attuale={passo} />
       <div className="griglia griglia--due">
-        <div>
+        <div className="tela-fissa">
           <div className={`tela${passo === 0 && foto ? " tela--trascina" : ""}`}>
             <canvas
               ref={tela}
