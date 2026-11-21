@@ -176,6 +176,8 @@ canvas:focus-visible {
   overflow: hidden; box-shadow: var(--ombra); background: #fff; touch-action: none;
 }
 .tela canvas { width: 100%; height: 100%; display: block; }
+.tela--verticale { width: auto; height: min(62vh, 640px); max-width: 100%; margin: 0 auto; }
+@media (max-width: 859px) { .tela--verticale { height: 46vh; } }
 /* sul telefono l'anteprima resta visibile mentre si scrive */
 @media (max-width: 859px) {
   .tela-fissa { position: sticky; top: 0; z-index: 5; padding: .4rem 0; background: var(--sfondo); }

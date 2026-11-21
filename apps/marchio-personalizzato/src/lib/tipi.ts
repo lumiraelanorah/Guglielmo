@@ -19,6 +19,8 @@ export interface ModelloPubblico {
   colore_testo: string;
   prezzo_cent: number;
   suggerimento_foto: string | null;
+  larghezza_mm: number;
+  altezza_mm: number;
 }
 
 export interface Modello extends Omit<ModelloPubblico, "nome_azienda"> {

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { disegnaEtichetta, type ModelloDisegno } from "@/lib/disegno";
-import { STAMPA } from "@/lib/stampa-misure";
+import { misure } from "@/lib/stampa-misure";
 import { POSIZIONE_INIZIALE } from "@/lib/zone";
 
 const cache = new Map<string, Promise<HTMLImageElement>>();
@@ -54,9 +54,14 @@ export function AnteprimaModello({
     );
   }, [img, modello, esempio]);
 
+  const dim = misure(modello.larghezza_mm, modello.altezza_mm);
+  const verticale = dim.larghezzaPx <= dim.altezzaPx;
   return (
-    <div className="tela" style={larghezza ? { width: larghezza } : undefined}>
-      <canvas ref={ref} width={STAMPA.larghezzaPx} height={STAMPA.altezzaPx} role="img" aria-label="Anteprima del modello con le zone modificabili" />
+    <div
+      className={`tela${verticale ? " tela--verticale" : ""}`}
+      style={{ aspectRatio: `${dim.larghezzaPx} / ${dim.altezzaPx}`, ...(larghezza ? { width: larghezza } : {}) }}
+    >
+      <canvas ref={ref} width={dim.larghezzaPx} height={dim.altezzaPx} role="img" aria-label="Anteprima del modello con le zone modificabili" />
     </div>
   );
 }

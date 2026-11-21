@@ -186,7 +186,7 @@ function PannelloModelli() {
           <div className="griglia griglia--due">
             <AnteprimaModello
               immagine={m.immagine_url}
-              modello={{ zona_foto: m.zona_foto, zona_dedica: m.consenti_dedica ? m.zona_dedica : null, zona_data: m.consenti_data ? m.zona_data : null, font: m.font, colore_testo: m.colore_testo }}
+              modello={{ larghezza_mm: m.larghezza_mm, altezza_mm: m.altezza_mm, zona_foto: m.zona_foto, zona_dedica: m.consenti_dedica ? m.zona_dedica : null, zona_data: m.consenti_data ? m.zona_data : null, font: m.font, colore_testo: m.colore_testo }}
               esempio={{ dedica: m.consenti_dedica ? "Esempio di dedica" : "", data: m.consenti_data ? "25 dicembre 2026" : "" }}
             />
             <div>
@@ -215,6 +215,8 @@ function PannelloModelli() {
                     <AnteprimaModello
                       immagine={(m.modifiche_in_attesa.immagine_url as string | null) ?? null}
                       modello={{
+                        larghezza_mm: m.modifiche_in_attesa.larghezza_mm ?? m.larghezza_mm,
+                        altezza_mm: m.modifiche_in_attesa.altezza_mm ?? m.altezza_mm,
                         zona_foto: m.modifiche_in_attesa.zona_foto ?? null,
                         zona_dedica: m.modifiche_in_attesa.consenti_dedica ? (m.modifiche_in_attesa.zona_dedica ?? null) : null,
                         zona_data: m.modifiche_in_attesa.consenti_data ? (m.modifiche_in_attesa.zona_data ?? null) : null,

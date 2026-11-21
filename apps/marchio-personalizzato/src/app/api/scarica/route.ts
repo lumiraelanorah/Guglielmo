@@ -43,7 +43,11 @@ export async function GET(req: Request) {
       },
     });
   }
-  const pdf = await creaPdfStampa(jpeg, { titolo: e.nome_prodotto, marchio: e.nome_azienda });
+  const pdf = await creaPdfStampa(
+    jpeg,
+    { titolo: e.nome_prodotto, marchio: e.nome_azienda },
+    { larghezzaMm: e.larghezza_mm ?? 100, altezzaMm: e.altezza_mm ?? 70 }
+  );
   return new Response(new Uint8Array(pdf), {
     headers: {
       ...intestazioni,

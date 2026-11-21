@@ -46,7 +46,7 @@ function SchedaModello({ m, onCambia }: { m: Modello; onCambia: () => void }) {
       <div className="griglia griglia--due">
         <AnteprimaModello
           immagine={m.immagine_url}
-          modello={{ zona_foto: m.zona_foto, zona_dedica: m.consenti_dedica ? m.zona_dedica : null, zona_data: m.consenti_data ? m.zona_data : null, font: m.font, colore_testo: m.colore_testo }}
+          modello={{ larghezza_mm: m.larghezza_mm, altezza_mm: m.altezza_mm, zona_foto: m.zona_foto, zona_dedica: m.consenti_dedica ? m.zona_dedica : null, zona_data: m.consenti_data ? m.zona_data : null, font: m.font, colore_testo: m.colore_testo }}
         />
         <div>
           <h3>{m.nome_prodotto}</h3>

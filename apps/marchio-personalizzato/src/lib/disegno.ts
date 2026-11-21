@@ -1,5 +1,5 @@
 import { posizioneFoto, zonaInPixel, zonaValida, type PosizioneFoto, type Zona } from "./zone";
-import { STAMPA } from "./stampa-misure";
+import { misure } from "./stampa-misure";
 
 export type FontModello = "serif" | "corsivo" | "semplice";
 
@@ -54,6 +54,9 @@ export function adattaTesto(
 }
 
 export interface ModelloDisegno {
+  /** misura finita dell'adesivo; se manca: 100 × 70 mm */
+  larghezza_mm?: number;
+  altezza_mm?: number;
   zona_foto: Zona | null;
   zona_dedica: Zona | null;
   zona_data: Zona | null;
@@ -170,8 +173,9 @@ export function disegnaEtichetta(
   c: Contenuto,
   opz: OpzioniDisegno = {}
 ) {
-  const W = STAMPA.larghezzaPx;
-  const H = STAMPA.altezzaPx;
+  const dim = misure(modello.larghezza_mm, modello.altezza_mm);
+  const W = dim.larghezzaPx;
+  const H = dim.altezzaPx;
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, W, H);
@@ -202,7 +206,7 @@ export function disegnaEtichetta(
   if (opz.filigrana) disegnaFiligrana(ctx, W, H);
 
   if (opz.mostraTaglio) {
-    const b = STAMPA.abbondanzaPx;
+    const b = dim.abbondanzaPx;
     ctx.save();
     ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.fillRect(0, 0, W, b);

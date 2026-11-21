@@ -10,7 +10,7 @@ import { Distintivo } from "@/components/atoms/Distintivo";
 import { CampoEtichettato } from "@/components/molecules/CampoEtichettato";
 import { caricaImmagine } from "@/components/molecules/AnteprimaModello";
 import { disegnaEtichetta, FONT_NOMI, type FontModello } from "@/lib/disegno";
-import { STAMPA, RAPPORTO } from "@/lib/stampa-misure";
+import { FORMATI, misure } from "@/lib/stampa-misure";
 import { normalizzaRettangolo, POSIZIONE_INIZIALE, zonaValida, type Zona } from "@/lib/zone";
 import { supabase } from "@/lib/supabase/browser";
 import { useSessione } from "@/lib/supabase/sessione";
@@ -56,6 +56,8 @@ export function EditorModello({ id }: { id: string }) {
     if (m?.immagine_url) caricaImmagine(m.immagine_url).then(setImg).catch(() => setImg(null));
   }, [m?.immagine_url]);
 
+  const dim = misure(m?.larghezza_mm, m?.altezza_mm);
+  const verticale = dim.larghezzaPx <= dim.altezzaPx;
   const zone = m
     ? {
         foto: attiva === "foto" && bozzaZona ? bozzaZona : m.zona_foto,
@@ -71,6 +73,8 @@ export function EditorModello({ id }: { id: string }) {
       ctx,
       img,
       {
+        larghezza_mm: m.larghezza_mm,
+        altezza_mm: m.altezza_mm,
         zona_foto: zone.foto,
         zona_dedica: m.consenti_dedica ? zone.dedica : null,
         zona_data: m.consenti_data ? zone.data : null,
@@ -147,10 +151,10 @@ export function EditorModello({ id }: { id: string }) {
       await prova.decode();
       URL.revokeObjectURL(url);
       const avvisi: string[] = [];
-      if (prova.width < STAMPA.larghezzaPx * 0.75 || prova.height < STAMPA.altezzaPx * 0.75)
-        avvisi.push(`L'immagine è piccola (${prova.width}×${prova.height}): per una stampa nitida servono almeno ${STAMPA.larghezzaPx}×${STAMPA.altezzaPx} pixel.`);
-      if (Math.abs(prova.width / prova.height - RAPPORTO) > 0.03)
-        avvisi.push("Le proporzioni non sono 106×76 mm: i bordi in eccesso verranno tagliati.");
+      if (prova.width < dim.larghezzaPx * 0.75 || prova.height < dim.altezzaPx * 0.75)
+        avvisi.push(`L'immagine è piccola (${prova.width}×${prova.height}): per una stampa nitida servono almeno ${dim.larghezzaPx}×${dim.altezzaPx} pixel.`);
+      if (Math.abs(prova.width / prova.height - dim.larghezzaPx / dim.altezzaPx) > 0.03)
+        avvisi.push(`Le proporzioni non sono quelle dell'adesivo (${m.larghezza_mm + 6}×${m.altezza_mm + 6} mm con il margine): i bordi in eccesso verranno tagliati.`);
       const est = file.type === "image/png" ? "png" : "jpg";
       const percorso = `${s.utente.id}/${m.id}-${Date.now()}.${est}`;
       const sb = supabase();
@@ -204,6 +208,8 @@ export function EditorModello({ id }: { id: string }) {
         font: m.font,
         colore_testo: m.colore_testo,
         suggerimento_foto: m.suggerimento_foto?.trim() || null,
+        larghezza_mm: m.larghezza_mm,
+        altezza_mm: m.altezza_mm,
         stato: statoNuovo,
       })
       .eq("id", m.id)
@@ -251,11 +257,11 @@ export function EditorModello({ id }: { id: string }) {
 
       <div className="griglia griglia--due">
         <div>
-          <div className="tela">
+          <div className={`tela${verticale ? " tela--verticale" : ""}`} style={{ aspectRatio: `${dim.larghezzaPx} / ${dim.altezzaPx}` }}>
             <canvas
               ref={tela}
-              width={STAMPA.larghezzaPx}
-              height={STAMPA.altezzaPx}
+              width={dim.larghezzaPx}
+              height={dim.altezzaPx}
               onPointerDown={giu}
               onPointerMove={muovi}
               onPointerUp={su}
@@ -278,9 +284,31 @@ export function EditorModello({ id }: { id: string }) {
           <CampoEtichettato id="nome-prodotto" etichetta="Nome del prodotto" value={m.nome_prodotto} onChange={(e) => aggiorna({ nome_prodotto: e.target.value })} />
 
           <div className="campo">
+            <label className="campo__etichetta" htmlFor="formato">
+              Formato dell&apos;adesivo
+            </label>
+            <select
+              id="formato"
+              className="campo__select"
+              value={`${m.larghezza_mm}x${m.altezza_mm}`}
+              onChange={(e) => {
+                const [w, h] = e.target.value.split("x").map(Number);
+                aggiorna({ larghezza_mm: w, altezza_mm: h });
+              }}
+            >
+              {FORMATI.map((f) => (
+                <option key={f.nome} value={`${f.larghezzaMm}x${f.altezzaMm}`}>
+                  {f.nome}
+                </option>
+              ))}
+            </select>
+            <span className="campo__aiuto">Cambiando formato, controlla di nuovo le zone.</span>
+          </div>
+          <div className="campo">
             <span className="campo__etichetta">Grafica dell&apos;etichetta</span>
             <span className="campo__aiuto">
-              PNG o JPG, ideale {STAMPA.larghezzaPx}×{STAMPA.altezzaPx} pixel (100×70 mm + 3 mm di margine per lato, 300 dpi).
+              PNG o JPG, ideale {dim.larghezzaPx}×{dim.altezzaPx} pixel ({m.larghezza_mm}×{m.altezza_mm} mm + 3 mm di margine per lato,
+              300 dpi).
             </span>
             <div className="carica-foto">
               <span className="pulsante pulsante--secondario pulsante--largo" aria-hidden="true">

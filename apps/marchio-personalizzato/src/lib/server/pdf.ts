@@ -3,11 +3,15 @@ import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 const pt = (mm: number) => (mm / 25.4) * 72;
 
 export const MARGINE_SEGNI_MM = 12;
-const RIFILATO = { w: 100, h: 70 };
 const ABBONDANZA = 3;
 
-/** PDF di stampa: etichetta 100×70 mm con 3 mm di abbondanza e segni di taglio. */
-export async function creaPdfStampa(jpeg: Uint8Array, info: { titolo: string; marchio: string }): Promise<Uint8Array> {
+/** PDF di stampa: etichetta nel formato del modello (predefinito 100×70 mm), 3 mm di abbondanza e segni di taglio. */
+export async function creaPdfStampa(
+  jpeg: Uint8Array,
+  info: { titolo: string; marchio: string },
+  formato: { larghezzaMm: number; altezzaMm: number } = { larghezzaMm: 100, altezzaMm: 70 }
+): Promise<Uint8Array> {
+  const RIFILATO = { w: formato.larghezzaMm, h: formato.altezzaMm };
   const doc = await PDFDocument.create();
   doc.setTitle(`Etichetta – ${info.titolo}`);
   doc.setAuthor(info.marchio);
@@ -48,8 +52,8 @@ export async function creaPdfStampa(jpeg: Uint8Array, info: { titolo: string; ma
   }
 
   const font = await doc.embedFont(StandardFonts.Helvetica);
-  const nota = "Stampa al 100% (dimensione reale) e ritaglia lungo i segni: 100 x 70 mm";
-  page.drawText(nota, { x: bx, y: pt(3), size: 6.5, font, color: rgb(0.35, 0.35, 0.35) });
+  const nota = `Stampa al 100% (dimensione reale) e ritaglia lungo i segni: ${RIFILATO.w} x ${RIFILATO.h} mm`;
+  page.drawText(nota, { x: pt(3), y: pt(3), size: 6, font, color: rgb(0.35, 0.35, 0.35) });
 
   return doc.save();
 }

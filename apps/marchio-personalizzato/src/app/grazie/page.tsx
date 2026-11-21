@@ -99,7 +99,9 @@ export default async function Grazie({ searchParams }: { searchParams: Promise<Q
             <ol>
               <li>Prendi l&apos;adesivo che trovi nella confezione e mettilo nella stampante.</li>
               <li>Apri il PDF e stampa con dimensione <strong>&quot;Reale&quot; o &quot;100%&quot;</strong> (non &quot;Adatta alla pagina&quot;).</li>
-              <li>Ritaglia lungo i segni agli angoli: l&apos;etichetta misura 10 × 7 cm.</li>
+              <li>
+                Ritaglia lungo i segni agli angoli: l&apos;etichetta misura {(e.larghezza_mm ?? 100) / 10} × {(e.altezza_mm ?? 70) / 10} cm.
+              </li>
               <li>Attaccala sulla confezione, sopra lo spazio del marchio.</li>
             </ol>
             <p className="campo__aiuto">Il file resta disponibile per 30 giorni da questo link.</p>

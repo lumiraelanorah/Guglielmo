@@ -21,6 +21,9 @@ Queste risposte le ha date chi ha avviato il progetto; vanno richieste a Gugliel
 - `/m/prova` – Panettone della Casa (foto rettangolare, dedica e data)
 - `/m/birra` – Birra della Casa: grafica originale stile etichetta d'epoca, foto al centro in una
   cornice ovale con il consiglio "alza una birra", dedica nel nastro (max 30) e data.
+- `/m/whisky` – Whisky di Famiglia della "Distilleria Guglielmo" (marchio inventato), formato
+  verticale 8×10 cm, foto grande al centro, dedica e data sotto. È la demo del concetto di papà.
+- Ogni modello ha il suo formato: 10×7, 7×10, 8×10, 9×9 cm (colonne larghezza_mm/altezza_mm).
   Nota: l'etichetta Jack Daniel's fatta da papà con ChatGPT non è stata copiata (marchio di altri);
   inserire in automatico una birra in mano alla persona richiederebbe un servizio di immagini AI a pagamento.
 

@@ -16,6 +16,7 @@ export default async function Home() {
         <div className="riga-pulsanti" style={{ justifyContent: "center" }}>
           <PulsanteLink href="/m/prova">Prova: il panettone</PulsanteLink>
           <PulsanteLink href="/m/birra">Prova: la birra</PulsanteLink>
+          <PulsanteLink href="/m/whisky">Prova: il whisky</PulsanteLink>
           <PulsanteLink href="/azienda" variante="secondario">
             Sei un&apos;azienda?
           </PulsanteLink>

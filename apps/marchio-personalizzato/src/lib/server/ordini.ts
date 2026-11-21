@@ -11,6 +11,8 @@ export interface DatiEtichetta {
   codice: string;
   nome_azienda: string;
   pagata_il: string | null;
+  larghezza_mm: number;
+  altezza_mm: number;
 }
 
 export async function leggiEtichetta(id: string, token: string, conImmagine: boolean): Promise<DatiEtichetta | null> {

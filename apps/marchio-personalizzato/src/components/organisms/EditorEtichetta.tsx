@@ -7,7 +7,7 @@ import { Casella } from "@/components/atoms/Casella";
 import { CampoEtichettato } from "@/components/molecules/CampoEtichettato";
 import { IndicatorePassi } from "@/components/molecules/IndicatorePassi";
 import { disegnaEtichetta, FONT_CSS, type ModelloDisegno } from "@/lib/disegno";
-import { STAMPA } from "@/lib/stampa-misure";
+import { misure } from "@/lib/stampa-misure";
 import { controllaTesto, formattaData } from "@/lib/testo";
 import { formattaPrezzo } from "@/lib/prezzo";
 import { emailValida } from "@/lib/validazione";
@@ -90,7 +90,11 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
   const puntatori = useRef(new Map<number, { x: number; y: number }>());
   const distanzaPinch = useRef<number | null>(null);
 
+  const dim = misure(modello.larghezza_mm, modello.altezza_mm);
+  const verticale = dim.larghezzaPx <= dim.altezzaPx;
   const disegno: ModelloDisegno = {
+    larghezza_mm: modello.larghezza_mm,
+    altezza_mm: modello.altezza_mm,
     zona_foto: modello.zona_foto,
     zona_dedica: modello.consenti_dedica ? modello.zona_dedica : null,
     zona_data: modello.consenti_data ? modello.zona_data : null,
@@ -156,10 +160,10 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
   }
 
   // --- spostamento e zoom della foto con dito o mouse ---
-  const zonaPx = zonaValida(modello.zona_foto) ? zonaInPixel(modello.zona_foto, STAMPA.larghezzaPx, STAMPA.altezzaPx) : null;
+  const zonaPx = zonaValida(modello.zona_foto) ? zonaInPixel(modello.zona_foto, dim.larghezzaPx, dim.altezzaPx) : null;
   const scalaTela = () => {
     const r = tela.current?.getBoundingClientRect();
-    return r && r.width > 0 ? STAMPA.larghezzaPx / r.width : 1;
+    return r && r.width > 0 ? dim.larghezzaPx / r.width : 1;
   };
 
   function giu(e: React.PointerEvent<HTMLCanvasElement>) {
@@ -220,8 +224,8 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
     setInvio(true);
     try {
       const c = document.createElement("canvas");
-      c.width = STAMPA.larghezzaPx;
-      c.height = STAMPA.altezzaPx;
+      c.width = dim.larghezzaPx;
+      c.height = dim.altezzaPx;
       const ctx = c.getContext("2d");
       if (!ctx) throw new Error("Il tuo browser non riesce a preparare l'immagine.");
       disegnaEtichetta(ctx, grafica, disegno, { foto, posizione, dedica, data: dataTesto }, {});
@@ -261,11 +265,14 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
       ) : null}
       <div className="griglia griglia--due">
         <div className="tela-fissa">
-          <div className={`tela${passo === 0 && foto ? " tela--trascina" : ""}`}>
+          <div
+            className={`tela${passo === 0 && foto ? " tela--trascina" : ""}${verticale ? " tela--verticale" : ""}`}
+            style={{ aspectRatio: `${dim.larghezzaPx} / ${dim.altezzaPx}` }}
+          >
             <canvas
               ref={tela}
-              width={STAMPA.larghezzaPx}
-              height={STAMPA.altezzaPx}
+              width={dim.larghezzaPx}
+              height={dim.altezzaPx}
               role="img"
               aria-label={`Anteprima dell'etichetta di ${modello.nome_prodotto}${foto ? " con la tua foto" : ""}${passo === 0 && foto ? ". Usa le frecce per spostare la foto." : ""}`}
               tabIndex={passo === 0 && foto ? 0 : -1}
@@ -387,7 +394,9 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
               <ul className="riepilogo">
                 <li>
                   <span>Etichetta personalizzata</span>
-                  <span>100 × 70 mm</span>
+                  <span>
+                    {modello.larghezza_mm} × {modello.altezza_mm} mm
+                  </span>
                 </li>
                 <li>
                   <span>File da stampare</span>
