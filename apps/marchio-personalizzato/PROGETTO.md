@@ -17,6 +17,16 @@ Queste risposte le ha date chi ha avviato il progetto; vanno richieste a Gugliel
 4. Stile: a temi scelti dall'amministratore. Calendario iniziale: San Valentino dal 1/1, Pasqua dal
    1/3, Regalo dal 1/7, Natale dal 1/11. Modificabile (anche "sempre un tema") da /admin.
 
+## Decisioni di papà (21/11, sera)
+- Obiettivo: le aziende devono autorizzare e trarne vantaggio economico e d'immagine.
+- Il QR apre l'etichetta originale con tutte le informazioni legali; il cliente aggiunge foto **o** messaggio.
+- Approvazione **automatica** secondo le regole della casa produttrice; la casa produttrice vede le
+  etichette e può ritirarle.
+- Servizio **gratuito per le aziende**; sulle confezioni un bollino che invita a personalizzare.
+- Ancora da fare (più avanti): divulgazione verso aziende e clienti; come far arrivare l'etichetta
+  al cliente (stampa a casa / spedita / in negozio / prodotto già personalizzato) non ancora deciso;
+  controllo automatico delle foto con AI (costo) da decidere.
+
 ## Modelli di prova
 - `/m/prova` – Panettone della Casa (foto rettangolare, dedica e data)
 - `/m/birra` – Birra della Casa: grafica originale stile etichetta d'epoca, foto al centro in una
@@ -42,6 +52,10 @@ invia per l'approvazione. Quando pubblicato: link, QR (PNG 1024 px) e statistich
 Le modifiche a un modello pubblicato restano "in attesa" (colonna modifiche_in_attesa): online resta
 la versione approvata e il QR continua a funzionare finché l'amministratore non le approva.
 Un modello pubblicato non si può eliminare; uno con etichette ancora scaricabili neanche.
+
+Regole per modello: consenti_foto, consenti_dedica/data, parole_vietate (fino a 100), lunghezza max.
+Area azienda: elenco etichette vendute del prodotto (senza email dei clienti), vedi e ritira.
+Bollino da stampare sulle confezioni: /api/bollino?codice=… (SVG 5×6 cm con QR). Pagina /aziende.
 
 ## Amministrazione (`/admin`)
 Tema del sito (automatico a calendario o fisso), modelli da approvare/rimandare/ritirare con nota,
