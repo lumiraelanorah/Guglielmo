@@ -17,11 +17,18 @@ Queste risposte le ha date chi ha avviato il progetto; vanno richieste a Gugliel
 4. Stile: a temi scelti dall'amministratore. Calendario iniziale: San Valentino dal 1/1, Pasqua dal
    1/3, Regalo dal 1/7, Natale dal 1/11. Modificabile (anche "sempre un tema") da /admin.
 
+## Modelli di prova
+- `/m/prova` – Panettone della Casa (foto rettangolare, dedica e data)
+- `/m/birra` – Birra della Casa: grafica originale stile etichetta d'epoca, foto al centro in una
+  cornice ovale con il consiglio "alza una birra", dedica nel nastro (max 30) e data.
+  Nota: l'etichetta Jack Daniel's fatta da papà con ChatGPT non è stata copiata (marchio di altri);
+  inserire in automatico una birra in mano alla persona richiederebbe un servizio di immagini AI a pagamento.
+
 ## Percorso del cliente
 1. QR → `/m/<codice>` (registra una "scansione").
 2. Sceglie/scatta la foto, la sposta col dito e la ingrandisce dentro la zona foto.
 3. Dedica (max 60 caratteri, filtro parole offensive; parole dubbie → "da controllare") e data.
-4. Anteprima con linea di taglio (registra un'"anteprima"), email, consenso foto + condizioni.
+4. Anteprima con filigrana "ANTEPRIMA · NON STAMPABILE" (sempre, fino al pagamento) e linea di taglio (registra un'"anteprima"), email, consenso foto + condizioni.
 5. Paga: Stripe Checkout se configurato, altrimenti pagina "pagamento di prova".
 6. `/grazie?id&t`: anteprima, PDF di stampa (100×70 mm, abbondanza 3 mm, segni di taglio, 300 dpi) e JPG.
 
@@ -58,7 +65,10 @@ Admin = email in `marchio_admin` con accesso creato ed email confermata.
 - Archivio: lumiraelanorah/Guglielmo → apps/marchio-personalizzato
 - Supabase: idee-di-papa (tmwtbvassbgobqjiusyy), prefisso marchio_
 - Vercel: progetto marchio-personalizzato (funzioni a Francoforte)
-- Email: Resend predisposto, non attivo (manca la chiave)
+- Email: Resend attivo (chiave solo invio). Senza dominio verificato le ricevute partono solo verso
+  lumiraelanorah@gmail.com (variabile RESEND_SOLO_A): toglierla quando c'è un dominio
+- Supabase Auth: Site URL e redirect impostati sull'indirizzo del sito (21/11)
+- Il vecchio progetto Vercel "guglielmo" (radice dell'archivio) è stato eliminato il 21/11
 - Pagamenti: Stripe predisposto, non attivo (manca la chiave) → pagamento simulato
 
 ## Variabili (Vercel)
@@ -77,7 +87,9 @@ EMAIL_MITTENTE (facoltative, da aggiungere).
 - [x] Area azienda: accesso, grafica, zone, approvazione, QR, statistiche
 - [x] Amministrazione: temi, approvazioni, vendite e segnalazioni, amministratori
 - [ ] Revisione di papà (vedi "Da rivedere")
-- [ ] Lucia: Stripe, Resend, Site URL di Supabase Auth, email di papà tra gli admin
+- [x] Site URL Supabase, chiave Resend, admin = lumiraelanorah@gmail.com (gestito da Claude per papà)
+- [ ] Pagamenti veri: serve account Stripe dell'azienda (dati aziendali, IBAN) e, per uso
+      commerciale, Vercel Pro (20 $/mese): decisione di papà
 
 ## Stato
 online (prova pilota)
