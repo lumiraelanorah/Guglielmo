@@ -18,6 +18,7 @@ export interface ModelloPubblico {
   font: FontModello;
   colore_testo: string;
   prezzo_cent: number;
+  suggerimento_foto: string | null;
 }
 
 export interface Modello extends Omit<ModelloPubblico, "nome_azienda"> {

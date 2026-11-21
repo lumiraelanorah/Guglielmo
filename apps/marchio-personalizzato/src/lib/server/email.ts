@@ -27,9 +27,16 @@ export function emailRicevuta(d: DatiRicevuta) {
   return { oggetto, testo, html };
 }
 
+/** Vero se a questo indirizzo possiamo davvero mandare email (senza dominio proprio: solo l'indirizzo di prova). */
+export function emailConsegnabile(a: string | null | undefined): boolean {
+  if (!process.env.RESEND_API_KEY || !a) return false;
+  const solo = process.env.RESEND_SOLO_A?.trim().toLowerCase();
+  return !solo || solo === a.trim().toLowerCase();
+}
+
 export async function inviaRicevuta(a: string, d: DatiRicevuta): Promise<boolean> {
   const chiave = process.env.RESEND_API_KEY;
-  if (!chiave || !a) return false;
+  if (!chiave || !emailConsegnabile(a)) return false;
   const e = emailRicevuta(d);
   try {
     const r = await fetch("https://api.resend.com/emails", {

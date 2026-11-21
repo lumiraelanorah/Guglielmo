@@ -4,6 +4,7 @@ import { PulsanteLink } from "@/components/atoms/Pulsante";
 import { leggiEtichetta, registraPagamento } from "@/lib/server/ordini";
 import { sessionePagata, stripeAttivo } from "@/lib/server/stripe";
 import { origine } from "@/lib/server/origine";
+import { emailConsegnabile } from "@/lib/server/email";
 import { formattaPrezzo } from "@/lib/prezzo";
 import { TOKEN, UUID } from "@/lib/validazione";
 
@@ -68,7 +69,7 @@ export default async function Grazie({ searchParams }: { searchParams: Promise<Q
       <h1>Grazie! La tua etichetta è pronta</h1>
       <p>
         Hai pagato {formattaPrezzo(e.importo_cent)} per l&apos;etichetta di <strong>{e.nome_prodotto}</strong>.
-        {e.email && process.env.RESEND_API_KEY ? (
+        {emailConsegnabile(e.email) ? (
           <> Ti abbiamo mandato la ricevuta e questo link a {e.email}.</>
         ) : (
           <> Salva questa pagina tra i preferiti: da qui puoi scaricare di nuovo il file.</>

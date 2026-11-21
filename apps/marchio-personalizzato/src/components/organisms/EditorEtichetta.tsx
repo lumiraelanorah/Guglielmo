@@ -119,7 +119,7 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
       grafica,
       disegno,
       { foto, posizione, dedica: esitoDedica.ok ? dedica : "", data: dataTesto },
-      { mostraZone: passo < 2, mostraTaglio: passo === 2, evidenzia: passo === 0 ? "foto" : passo === 1 ? "dedica" : null }
+      { filigrana: true, mostraZone: passo < 2, mostraTaglio: passo === 2, evidenzia: passo === 0 ? "foto" : passo === 1 ? "dedica" : null }
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grafica, foto, posizione, dedica, dataTesto, passo, fontPronti, esitoDedica.ok]);
@@ -280,7 +280,8 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
           </div>
           {passo === 2 ? (
             <p className="campo__aiuto" style={{ marginTop: ".5rem" }}>
-              La linea rossa tratteggiata indica dove si taglia: quello che sta fuori è il margine di sicurezza.
+              La linea rossa tratteggiata indica dove si taglia: quello che sta fuori è il margine di sicurezza. La scritta
+              &quot;Anteprima&quot; sparisce nel file che scarichi dopo il pagamento.
             </p>
           ) : null}
         </div>
@@ -290,6 +291,11 @@ export function EditorEtichetta({ modello, pagamentoDiProva }: { modello: Modell
             <section aria-labelledby="t-foto">
               <h2 id="t-foto">1. Scegli la foto</h2>
               <p>La foto va solo nello spazio evidenziato: il resto dell&apos;etichetta resta come l&apos;ha pensata il marchio.</p>
+              {modello.suggerimento_foto ? (
+                <p>
+                  <strong>Consiglio:</strong> {modello.suggerimento_foto}
+                </p>
+              ) : null}
               <div className="carica-foto" style={{ marginBottom: "1rem" }}>
                 <span className="pulsante pulsante--largo" aria-hidden="true">
                   {caricandoFoto ? "Sto aprendo la foto…" : foto ? "Cambia foto" : "📷 Scegli o scatta una foto"}

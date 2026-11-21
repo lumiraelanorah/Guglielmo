@@ -130,7 +130,8 @@ export function EditorModello({ id }: { id: string }) {
     }
     setMessaggio(null);
     const chiave = attiva === "foto" ? "zona_foto" : attiva === "dedica" ? "zona_dedica" : "zona_data";
-    aggiorna({ [chiave]: z } as Partial<Modello>);
+    const conForma = attiva === "foto" && m?.zona_foto?.forma ? { ...z, forma: m.zona_foto.forma } : z;
+    aggiorna({ [chiave]: conForma } as Partial<Modello>);
   }
 
   async function caricaGrafica(file: File | undefined) {
@@ -202,6 +203,7 @@ export function EditorModello({ id }: { id: string }) {
         max_caratteri: m.max_caratteri,
         font: m.font,
         colore_testo: m.colore_testo,
+        suggerimento_foto: m.suggerimento_foto?.trim() || null,
         stato: statoNuovo,
       })
       .eq("id", m.id)
@@ -307,6 +309,21 @@ export function EditorModello({ id }: { id: string }) {
             </div>
           </div>
 
+          <Casella
+            id="foto-ovale"
+            checked={m.zona_foto?.forma === "ovale"}
+            onChange={(v) => m.zona_foto && aggiorna({ zona_foto: { ...m.zona_foto, forma: v ? "ovale" : "rettangolo" } })}
+          >
+            Foto con cornice ovale
+          </Casella>
+          <CampoEtichettato
+            id="suggerimento"
+            etichetta="Consiglio per la foto (facoltativo)"
+            value={m.suggerimento_foto ?? ""}
+            maxLength={140}
+            onChange={(e) => aggiorna({ suggerimento_foto: e.target.value })}
+            placeholder="Es. Scegli una foto in cui alzi il boccale!"
+          />
           <Casella id="consenti-dedica" checked={m.consenti_dedica} onChange={(v) => aggiorna({ consenti_dedica: v })}>
             Il cliente può scrivere una dedica
           </Casella>

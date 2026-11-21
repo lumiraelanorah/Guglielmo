@@ -69,6 +69,8 @@ export interface Contenuto {
 }
 
 export interface OpzioniDisegno {
+  /** scritta "ANTEPRIMA" ripetuta: c'è finché il cliente non ha pagato */
+  filigrana?: boolean;
   mostraZone?: boolean;
   mostraTaglio?: boolean;
   evidenzia?: "foto" | "dedica" | "data" | null;
@@ -106,15 +108,47 @@ function scriviNelRiquadro(ctx: Ctx, testo: string, z: Zona, font: FontModello, 
   ctx.restore();
 }
 
+function tracciaForma(ctx: Ctx, z: Zona, W: number, H: number) {
+  const r = zonaInPixel(z, W, H);
+  ctx.beginPath();
+  if (z.forma === "ovale") ctx.ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2, r.h / 2, 0, 0, Math.PI * 2);
+  else ctx.rect(r.x, r.y, r.w, r.h);
+}
+
+function disegnaFiligrana(ctx: Ctx, W: number, H: number) {
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(-Math.PI / 7);
+  ctx.font = `800 58px "Nunito", Arial, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineWidth = 3;
+  const testo = "ANTEPRIMA · NON STAMPABILE";
+  const passoY = 150;
+  const passoX = ctx.measureText(testo).width + 90;
+  for (let y = -H; y <= H; y += passoY) {
+    const sfasa = (Math.round(y / passoY) % 2) * (passoX / 2);
+    for (let x = -W * 1.2; x <= W * 1.2; x += passoX) {
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.22)";
+      ctx.strokeText(testo, x + sfasa, y);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.42)";
+      ctx.fillText(testo, x + sfasa, y);
+    }
+  }
+  ctx.restore();
+}
+
 function contornoZona(ctx: Ctx, z: Zona, etichetta: string, attiva: boolean, W: number, H: number) {
   const r = zonaInPixel(z, W, H);
   ctx.save();
   ctx.fillStyle = attiva ? "rgba(255, 196, 0, 0.22)" : "rgba(0, 120, 255, 0.10)";
-  ctx.fillRect(r.x, r.y, r.w, r.h);
+  tracciaForma(ctx, z, W, H);
+  ctx.fill();
   ctx.setLineDash([18, 12]);
   ctx.lineWidth = 6;
   ctx.strokeStyle = attiva ? "#e0a000" : "#1f6fd1";
-  ctx.strokeRect(r.x, r.y, r.w, r.h);
+  tracciaForma(ctx, z, W, H);
+  ctx.stroke();
   ctx.setLineDash([]);
   const d = Math.max(22, Math.min(42, r.h * 0.18));
   ctx.font = `700 ${d}px "Nunito", Arial, sans-serif`;
@@ -148,8 +182,7 @@ export function disegnaEtichetta(
     if (c.foto) {
       const p = posizioneFoto(zona, { w: c.foto.width, h: c.foto.height }, c.posizione);
       ctx.save();
-      ctx.beginPath();
-      ctx.rect(zona.x, zona.y, zona.w, zona.h);
+      tracciaForma(ctx, modello.zona_foto, W, H);
       ctx.clip();
       ctx.drawImage(c.foto, p.x, p.y, p.w, p.h);
       ctx.restore();
@@ -165,6 +198,8 @@ export function disegnaEtichetta(
     if (c.data.trim()) scriviNelRiquadro(ctx, c.data, modello.zona_data, modello.font, modello.colore_testo, W, H);
     else if (opz.mostraZone) contornoZona(ctx, modello.zona_data, "Data", opz.evidenzia === "data", W, H);
   }
+
+  if (opz.filigrana) disegnaFiligrana(ctx, W, H);
 
   if (opz.mostraTaglio) {
     const b = STAMPA.abbondanzaPx;

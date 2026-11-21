@@ -14,7 +14,8 @@ export default async function Home() {
         <h1>{t.titolo}</h1>
         <p>{t.sottotitolo}</p>
         <div className="riga-pulsanti" style={{ justifyContent: "center" }}>
-          <PulsanteLink href="/m/prova">Prova con il prodotto di esempio</PulsanteLink>
+          <PulsanteLink href="/m/prova">Prova: il panettone</PulsanteLink>
+          <PulsanteLink href="/m/birra">Prova: la birra</PulsanteLink>
           <PulsanteLink href="/azienda" variante="secondario">
             Sei un&apos;azienda?
           </PulsanteLink>

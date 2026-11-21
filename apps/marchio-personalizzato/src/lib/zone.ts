@@ -4,6 +4,8 @@ export interface Zona {
   y: number;
   w: number;
   h: number;
+  /** solo per la foto: rettangolo (predefinito) o ovale */
+  forma?: "rettangolo" | "ovale";
 }
 
 export interface Rettangolo {
@@ -31,8 +33,9 @@ const MIN_LATO = 0.03;
 
 export function zonaValida(z: unknown): z is Zona {
   if (!z || typeof z !== "object") return false;
-  const { x, y, w, h } = z as Zona;
+  const { x, y, w, h, forma } = z as Zona;
   if (![x, y, w, h].every((n) => typeof n === "number" && Number.isFinite(n))) return false;
+  if (forma !== undefined && forma !== "rettangolo" && forma !== "ovale") return false;
   return x >= 0 && y >= 0 && w >= MIN_LATO && h >= MIN_LATO && x + w <= 1.0001 && y + h <= 1.0001;
 }
 
